@@ -1,14 +1,8 @@
 train:
-  batch_size: 32
+  batch_size: 64
   epochs: 10
-  log_interval: 10
+  log_interval: 50
   lr: 2e-4
-  loss_function: "MSE"
-  columns: "standard"
-
-model:
-  type: "VQ-VAE"
-  embedding_size: 64
 
 logger:
   results_path: "results/"
@@ -18,9 +12,6 @@ logger:
 system:
   cuda: True
   seed: 42
-
-dataset:
-  name: "CIFAR10"
 
 vqvae:
     in_channels: 3
