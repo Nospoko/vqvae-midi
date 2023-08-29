@@ -4,7 +4,7 @@ train:
   log_interval: 10
   lr: 2e-4
   loss_function: "MSE"
-  shuffle: True
+  columns: "standard"
 
 model:
   type: "VQ-VAE"

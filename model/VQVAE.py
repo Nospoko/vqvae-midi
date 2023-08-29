@@ -99,21 +99,21 @@ class Decoder(nn.Module):
 
 
 class VQVAE(nn.Module):
-    def __init__(self, cfg, device):
+    def __init__(self, cfg):
         super().__init__()
 
-        in_channels = cfg.in_channels
-        num_hiddens = cfg.num_hiddens
-        num_downsampling_layers = cfg.num_downsampling_layers
-        num_residual_layers = cfg.num_residual_layers
-        num_residual_hiddens = cfg.num_residual_hiddens
-        embedding_dim = cfg.embedding_dim
-        num_embeddings = cfg.num_embeddings
-        use_ema = cfg.use_ema
-        decay = cfg.decay
-        epsilon = cfg.epsilon
+        in_channels = cfg.vqvae.in_channels
+        num_hiddens = cfg.vqvae.num_hiddens
+        num_downsampling_layers = cfg.vqvae.num_downsampling_layers
+        num_residual_layers = cfg.vqvae.num_residual_layers
+        num_residual_hiddens = cfg.vqvae.num_residual_hiddens
+        embedding_dim = cfg.vqvae.embedding_dim
+        num_embeddings = cfg.vqvae.num_embeddings
+        use_ema = cfg.vqvae.use_ema
+        decay = cfg.vqvae.decay
+        epsilon = cfg.vqvae.epsilon
 
-        self.device = torch.device("cuda" if device and torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if cfg.system.cuda and torch.cuda.is_available() else "cpu")
         print(self.device)
 
         # Define layers in __init__
