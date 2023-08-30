@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from datasets import Dataset, DatasetDict, load_dataset
 
 
@@ -19,11 +20,25 @@ def create_dict_from_split(split, rolling_window_size=1024, hop_size=256):
         window_number = 0
         for idx in range(0, total_length - rolling_window_size + 1, hop_size):
             names.append(f"{window_number} {name}")
-            starts.append(track["notes"]["start"][idx : idx + rolling_window_size])
+
+            start_window = np.array(track["notes"]["start"][idx : idx + rolling_window_size])
+            first_start_value = start_window[0]
+            start_window -= first_start_value
+            starts.append(start_window.tolist())
+
             durations.append(track["notes"]["duration"][idx : idx + rolling_window_size])
-            ends.append(track["notes"]["end"][idx : idx + rolling_window_size])
+            # Shift "end" accordingly
+            end_window = np.array(track["notes"]["end"][idx : idx + rolling_window_size])
+            end_window -= first_start_value
+            ends.append(end_window.tolist())
+
             pitches.append(track["notes"]["pitch"][idx : idx + rolling_window_size])
-            velocities.append(track["notes"]["velocity"][idx : idx + rolling_window_size])
+            velocity = track["notes"]["velocity"][idx : idx + rolling_window_size]
+            # Convert velocity to a numpy array and normalize to [-1, 1]
+            velocity = np.array(velocity)
+            velocity = 2 * ((velocity - 0) / (127 - 0)) - 1
+            velocities.append(velocity.tolist())
+
             # change name for next window
             window_number += 1
 

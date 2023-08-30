@@ -2,7 +2,7 @@ train:
   batch_size: 64
   epochs: 10
   log_interval: 2
-  lr: 2e-4
+  lr: 1e-6
 
 logger:
   results_path: "results/"
@@ -27,7 +27,7 @@ model:
   input_features_filters: 3  # Aligned with the number of channels
   augment_input_features: False
   embedding_dim: 64
-  num_embeddings: 32
+  num_embeddings: 128
   commitment_cost: 0.25
   decay: 0.0
   use_jitter: False
