@@ -2,6 +2,7 @@ import hydra
 import torch
 import wandb
 import numpy as np
+from tqdm import tqdm
 from torch import nn, optim
 import matplotlib.pyplot as plt
 from omegaconf import OmegaConf, DictConfig
@@ -55,7 +56,11 @@ def train(model, train_loader, optimizer, criterion, cfg, epoch):
     total_train_loss = 0
     total_recon_error = 0
     n_train = 0
-    for batch_idx, batch in enumerate(train_loader):
+
+    # Initialize tqdm loop
+    progress_bar = tqdm(enumerate(train_loader), total=len(train_loader))
+
+    for batch_idx, batch in progress_bar:
         optimizer.zero_grad()
         x_combined = torch.stack([batch["start"], batch["duration"], batch["velocity"]], dim=1)
 
@@ -77,13 +82,24 @@ def train(model, train_loader, optimizer, criterion, cfg, epoch):
         optimizer.step()
         n_train += 1
 
-        if (batch_idx + 2) % cfg.train.log_interval == 0:
-            perplexity_value = perplexity.item()
-            print("Epoch {}: loss {:.4f} perplexity {:.3f}".format(epoch, losses["loss"], perplexity_value))
-            velocity = x_combined[0, 2].detach().cpu().numpy()
-            velocity_recon = reconstructed_x[0, 2].detach().cpu().numpy()
-            print(f"Velocity: {np.min(velocity)} - {np.max(velocity)}, shape: {velocity.shape}")
-            print(f"Velocity recon: {np.min(velocity_recon)} - {np.max(velocity_recon)}, shape: {velocity_recon.shape}")
+        # Update tqdm loop
+        progress_bar.set_description(f"Epoch {epoch} Loss: {losses['loss']:.4f}")
+
+        # if (batch_idx + 2) % cfg.train.log_interval == 0:
+        #     perplexity_value = perplexity.item()
+        #     print(f"Epoch {epoch}: loss {losses['loss']:.4f} perplexity {perplexity_value:.3f}")
+        #     velocity = x_combined[0, 2].detach().cpu().numpy()
+        #     velocity_recon = reconstructed_x[0, 2].detach().cpu().numpy()
+        #     print(f"Velocity: {np.min(velocity)} - {np.max(velocity)}, shape: {velocity.shape}")
+        #     print(f"Velocity recon: {np.min(velocity_recon)} - {np.max(velocity_recon)}, shape: {velocity_recon.shape}")
+
+    # Save checkpoint
+    checkpoint = {
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "epoch": epoch,
+    }
+    torch.save(checkpoint, f"checkpoints/checkpoint_{epoch}.pt")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
