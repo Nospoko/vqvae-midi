@@ -1,7 +1,7 @@
 train:
   batch_size: 64
   epochs: 10
-  log_interval: 50
+  log_interval: 2
   lr: 2e-4
 
 logger:
@@ -13,17 +13,25 @@ system:
   cuda: True
   seed: 42
 
-vqvae:
-    in_channels: 3
-    num_hiddens: 128
-    num_downsampling_layers: 2
-    num_residual_layers: 2
-    num_residual_hiddens: 32
-    embedding_dim: 64
-    num_embeddings: 512
-    use_ema: True
-    decay: 0.99
-    epsilon: 1e-5
-    beta: 0.25
+model:
+  output_features_filters: 3
+  augment_output_features: False
+  output_features_dim: 1024  # Aligned with input_features_dim
+  verbose: False
+  num_hiddens: 1024
+  num_residual_layers: 2
+  num_residual_hiddens: 768
+  use_kaiming_normal: False
+  input_features_type: 'mfcc'
+  input_features_dim: 1024  # Aligned with the number of data points in each channel
+  input_features_filters: 3  # Aligned with the number of channels
+  augment_input_features: False
+  embedding_dim: 64
+  num_embeddings: 32
+  commitment_cost: 0.25
+  decay: 0.0
+  use_jitter: False
+  jitter_probability: 0.12
+  record_codebook_stats: False
 
 run_date: ${now:%Y_%m_%d_%H_%M}
