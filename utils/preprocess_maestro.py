@@ -43,15 +43,22 @@ def create_dict_from_split(split, rolling_window_size=1024, hop_size=256):
             window_number += 1
 
     # Create a dictionary containing all the data
-    data_dict = {"name": names, "start": starts, "duration": durations, "end": ends, "pitch": pitches, "velocity": velocities}
+    data_dict = {
+        "name": names,
+        "start": starts,
+        "duration": durations,
+        "end": ends,
+        "pitch": pitches,
+        "velocity": velocities,
+    }
 
     return data_dict
 
 
 if __name__ == "__main__":
     data = load_dataset("roszcz/maestro-v1-sustain")
-    rolling_window_size = 1024
-    hop_size = 256
+    rolling_window_size = 60
+    hop_size = 20
 
     train = data["train"]
     validation = data["validation"]
