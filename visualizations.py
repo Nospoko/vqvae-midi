@@ -4,21 +4,26 @@ import matplotlib.pyplot as plt
 
 def show_midi_random_pitch(start, duration, velocity, start_recon, duration_recon, velocity_recon, title):
     # reapeat 60, 62, 64, 65, 67 for pitch
-    pitch = np.repeat(np.array([60, 62, 64, 65, 67]), 1024 // 5)
+    pitch = np.repeat(np.array([60, 62, 64, 65, 67]), start.shape[0] // 5)
 
-    # print value ranges:
-    print("Reconstructed ranges: ")
-    print(f"start: {np.min(start_recon)} - {np.max(start_recon)}")
-    print(f"duration: {np.min(duration_recon)} - {np.max(duration_recon)}")
-    print(f"velocity: {np.min(velocity_recon)} - {np.max(velocity_recon)}")
+    # de-normalize velocity from [-1, 1] to [0, 127]
+    velocity = (velocity + 1) * 127.0 / 2.0
+    velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
+    # if velocity > 127, set it to 127
+    velocity_recon[velocity_recon > 127] = 127
 
-    print("Original ranges: ")
-    print(f"start: {np.min(start)} - {np.max(start)}")
-    print(f"duration: {np.min(duration)} - {np.max(duration)}")
-    print(f"velocity: {np.min(velocity)} - {np.max(velocity)}")
+    # take only first n notes
+    n = 10
+    start = start[:n]
+    duration = duration[:n]
+    velocity = velocity[:n]
+    start_recon = start_recon[:n]
+    duration_recon = duration_recon[:n]
+    velocity_recon = velocity_recon[:n]
+    pitch = pitch[:n]
 
     # 2 charts next to each other
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 5))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(20, 5))
     for s, e, v, p in zip(start, duration, velocity, pitch):
         ax1.broken_barh([(s, e - s)], (p, 1), facecolors=(0.0, v / 127.0, 0.0))
         ax1.text(s + 0.5 * (e - s), p + 0.5, str(v), horizontalalignment="center", verticalalignment="center")
@@ -31,6 +36,35 @@ def show_midi_random_pitch(start, duration, velocity, start_recon, duration_reco
     ax1.set_title("Original")
     ax2.grid(True)
     ax2.set_title("Reconstructed")
+
+    plt.suptitle(title)
+    # save the figure
+    plt.savefig(f"results/{title}.png")
+
+
+def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title):
+    """
+    3 axes showing the parameters of the original and reconstructed data
+    """
+    velocity = (velocity + 1) * 127.0 / 2.0
+    velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
+
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 5))
+
+    ax1.plot(start, color="blue", label="Original")
+    ax1.plot(start_recon, color="orange", label="Reconstructed")
+    ax1.set_title("Start")
+    ax1.legend()
+
+    ax2.plot(duration, color="blue", label="Original")
+    ax2.plot(duration_recon, color="orange", label="Reconstructed")
+    ax2.set_title("Duration")
+    ax2.legend()
+
+    ax3.plot(velocity, color="blue", label="Original")
+    ax3.plot(velocity_recon, color="orange", label="Reconstructed")
+    ax3.set_title("Velocity")
+    ax3.legend()
 
     plt.suptitle(title)
     # save the figure

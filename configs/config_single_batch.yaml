@@ -1,8 +1,8 @@
 train:
   batch_size: 64
-  epochs: 3
+  epochs: 500
   log_interval: 2
-  lr: 1e-6
+  lr: 2e-4
 
 logger:
   results_path: "results/"
@@ -18,9 +18,9 @@ model:
   augment_output_features: False
   output_features_dim: 60  # Aligned with input_features_dim
   verbose: False
-  num_hiddens: 512
+  num_hiddens: 200
   num_residual_layers: 2
-  num_residual_hiddens: 384
+  num_residual_hiddens: 4
   use_kaiming_normal: False
   input_features_type: 'mfcc'
   input_features_dim: 60  # Aligned with the number of data points in each channel
