@@ -9,28 +9,24 @@ def create_dict_from_split(split, rolling_window_size=1024, hop_size=256):
     names = []
     starts = []
     durations = []
-    ends = []
     pitches = []
     velocities = []
 
     for track in split:
         name = f"{track['composer']} {track['title']}"
         total_length = len(track["notes"]["start"])
+        # convert starts to dstarts (difference between starts)
+        track["notes"]["start"] = np.diff(track["notes"]["start"])
+        # Add a zero to the start of the dstarts
+        track["notes"]["start"] = np.insert(track["notes"]["start"], 0, 0)
 
         window_number = 0
         for idx in range(0, total_length - rolling_window_size + 1, hop_size):
             names.append(f"{window_number} {name}")
 
-            start_window = np.array(track["notes"]["start"][idx : idx + rolling_window_size])
-            first_start_value = start_window[0]
-            start_window -= first_start_value
-            starts.append(start_window.tolist())
+            starts.append(track["notes"]["start"][idx : idx + rolling_window_size])
 
             durations.append(track["notes"]["duration"][idx : idx + rolling_window_size])
-            # Shift "end" accordingly
-            end_window = np.array(track["notes"]["end"][idx : idx + rolling_window_size])
-            end_window -= first_start_value
-            ends.append(end_window.tolist())
 
             pitches.append(track["notes"]["pitch"][idx : idx + rolling_window_size])
             velocity = track["notes"]["velocity"][idx : idx + rolling_window_size]
@@ -47,7 +43,6 @@ def create_dict_from_split(split, rolling_window_size=1024, hop_size=256):
         "name": names,
         "start": starts,
         "duration": durations,
-        "end": ends,
         "pitch": pitches,
         "velocity": velocities,
     }
