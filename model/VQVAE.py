@@ -78,8 +78,6 @@ class VQVAE(nn.Module):
         return self._decoder
 
     def forward(self, x):
-        # x = x.permute(0, 2, 1).contiguous().float()
-
         z = self._encoder(x)
 
         z = self._pre_vq_conv(z)

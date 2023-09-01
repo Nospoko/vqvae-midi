@@ -20,6 +20,8 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def test(model, test_loader, criterion, cfg, epoch):
@@ -125,7 +127,7 @@ def main(cfg: DictConfig):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)
 
-    train_loader, _, _ = create_loaders(cfg)
+    train_loader, _, _ = create_loaders(cfg, seed=cfg.system.seed)
 
     # Train the model
     for epoch in range(1, cfg.train.epochs + 1):

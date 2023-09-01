@@ -42,14 +42,14 @@ def show_midi_random_pitch(start, duration, velocity, start_recon, duration_reco
     plt.savefig(f"results/{title}.png")
 
 
-def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title):
+def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title, lr):
     """
     3 axes showing the parameters of the original and reconstructed data
     """
     velocity = (velocity + 1) * 127.0 / 2.0
     velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
 
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(20, 5))
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 9))
 
     ax1.plot(start, color="blue", label="Original")
     ax1.plot(start_recon, color="orange", label="Reconstructed")
@@ -68,4 +68,29 @@ def compare_values(start, duration, velocity, start_recon, duration_recon, veloc
 
     plt.suptitle(title)
     # save the figure
-    plt.savefig(f"results/{title}.png")
+    plt.tight_layout()
+    plt.savefig(f"results/values_{lr}.png")
+
+
+def show_loss(losses: dict, lr, title="losses"):
+    """
+    Show the losses of the model
+    """
+    fig, ax = plt.subplots(figsize=(15, 5))
+
+    ax.set_title(title)
+
+    color = "tab:red"
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("reconstruction loss", color=color)
+    ax.plot(losses["reconstruction_loss"], color=color)
+    ax.tick_params(axis="y", labelcolor=color)
+
+    ax2 = ax.twinx()
+
+    color = "tab:blue"
+    ax2.set_ylabel("vq loss", color=color)
+    ax2.plot(losses["vq_loss"], color=color)
+    ax2.tick_params(axis="y", labelcolor=color)
+
+    plt.savefig(f"results/losses{lr}.png")
