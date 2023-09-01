@@ -46,8 +46,10 @@ def compare_values(start, duration, velocity, start_recon, duration_recon, veloc
     """
     3 axes showing the parameters of the original and reconstructed data
     """
-    velocity = (velocity + 1) * 127.0 / 2.0
-    velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
+    # velocity = (velocity + 1) * 127.0 / 2.0
+    # velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
+    velocity = velocity * 127.0
+    velocity_recon = velocity_recon * 127.0
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 9))
 

@@ -30,10 +30,9 @@ def create_dict_from_split(split, rolling_window_size=1024, hop_size=256):
 
             pitches.append(track["notes"]["pitch"][idx : idx + rolling_window_size])
             velocity = track["notes"]["velocity"][idx : idx + rolling_window_size]
-            # Convert velocity to a numpy array and normalize to [-1, 1]
-            velocity = np.array(velocity)
-            velocity = 2 * ((velocity - 0) / (127 - 0)) - 1
-            velocities.append(velocity.tolist())
+            # Convert velocity to a numpy array and normalize to [0, 1]
+            velocity = np.array(velocity) / 127.0
+            velocities.append(velocity)
 
             # change name for next window
             window_number += 1
