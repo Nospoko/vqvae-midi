@@ -3,8 +3,8 @@ import torch
 from torch import nn, optim
 from omegaconf import DictConfig
 
-from train import set_seed
 from model.VQVAE import VQVAE
+from train import set_seed, count_parameters
 from utils.data_loader import create_loaders
 from visualizations import show_loss, compare_values
 
@@ -14,6 +14,7 @@ def overfit_single_batch(cfg: DictConfig):
     # Initialize model, loss, optimizer
     model = VQVAE(cfg.model, cfg.system.device)
     model.to(cfg.system.device)
+    count_parameters(model)
 
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)
@@ -49,22 +50,37 @@ def overfit_single_batch(cfg: DictConfig):
         losses_dict["reconstruction_loss"].append(reconstruction_loss.item())
         losses_dict["vq_loss"].append(vq_loss.item())
 
-        print(
-            f"Epoch [{epoch}/{cfg.train.epochs}]: Recon loss: {losses_dict['reconstruction_loss'][-1]}, VQ loss: {losses_dict['vq_loss'][-1]}"
-        )
+        if epoch % cfg.train.log_interval == 0:
+            print(
+                f"Epoch [{epoch}/{cfg.train.epochs}]: Recon loss: {losses_dict['reconstruction_loss'][-1]}, VQ loss: {losses_dict['vq_loss'][-1]}"
+            )
+            # save checkpoint
+            # FIXME: can load but reconstruction doesn't work due to VQ layer
+            checkpoint = {
+                "epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "losses": losses_dict,
+                "x_combined": x_combined,
+                "single_batch": single_batch,
+            }
+            name = f"single_batch_overfitting_{cfg.train.lr}_{epoch}.pth"
+            torch.save(checkpoint, f"{cfg.logger.checkpoint_path}/{name}")
 
     # visualize the original and reconstructed data
     lr = cfg.train.lr
-    compare_values(
-        start=single_batch["start"][0, :].detach().cpu().numpy(),
-        duration=single_batch["duration"][0, :].detach().cpu().numpy(),
-        velocity=single_batch["velocity"][0, :].detach().cpu().numpy(),
-        start_recon=reconstructed_x[0, 0, :].detach().cpu().numpy(),
-        duration_recon=reconstructed_x[0, 1, :].detach().cpu().numpy(),
-        velocity_recon=reconstructed_x[0, 2, :].detach().cpu().numpy(),
-        title=f"Overfitting a single batch, lr={lr}",
-        lr=lr,
-    )
+    for track_idx in range(cfg.train.batch_size):
+        compare_values(
+            start=single_batch["start"][track_idx, :].detach().cpu().numpy(),
+            duration=single_batch["duration"][track_idx, :].detach().cpu().numpy(),
+            velocity=single_batch["velocity"][track_idx, :].detach().cpu().numpy(),
+            start_recon=reconstructed_x[track_idx, 0, :].detach().cpu().numpy(),
+            duration_recon=reconstructed_x[track_idx, 1, :].detach().cpu().numpy(),
+            velocity_recon=reconstructed_x[track_idx, 2, :].detach().cpu().numpy(),
+            title=f"Overfitting a single batch, lr={lr}, reconstruction loss={losses_dict['reconstruction_loss'][-1]}",
+            lr=lr,
+            num=track_idx,
+        )
 
     # visualize the losses
     show_loss(losses_dict, lr, title=f"Overfitting a single batch, lr={lr}")

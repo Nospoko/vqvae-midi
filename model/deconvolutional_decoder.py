@@ -28,6 +28,9 @@ class DeconvolutionalDecoder(nn.Module):
         self._device = device
         self._verbose = verbose
 
+        # self.batch_norm_trans_1 = nn.BatchNorm1d(num_hiddens)
+        # self.batch_norm_trans_2 = nn.BatchNorm1d(num_hiddens)
+
         if self._use_jitter:
             self._jitter = Jitter(jitter_probability)
 
@@ -77,10 +80,12 @@ class DeconvolutionalDecoder(nn.Module):
         if self._verbose:
             ConsoleLogger.status("[FEATURES_DEC] _residual_stack output size: {}".format(x.size()))
 
+        # x = self.batch_norm_trans_1(x)
         x = F.relu(self._conv_trans_1(x))
         if self._verbose:
             ConsoleLogger.status("[FEATURES_DEC] _conv_trans_1 output size: {}".format(x.size()))
 
+        # x = self.batch_norm_trans_2(x)
         x = F.relu(self._conv_trans_2(x))
         if self._verbose:
             ConsoleLogger.status("[FEATURES_DEC] _conv_trans_2 output size: {}".format(x.size()))

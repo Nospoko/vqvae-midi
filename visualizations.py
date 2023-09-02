@@ -42,7 +42,7 @@ def show_midi_random_pitch(start, duration, velocity, start_recon, duration_reco
     plt.savefig(f"results/{title}.png")
 
 
-def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title, lr):
+def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title, lr, num=0):
     """
     3 axes showing the parameters of the original and reconstructed data
     """
@@ -71,7 +71,7 @@ def compare_values(start, duration, velocity, start_recon, duration_recon, veloc
     plt.suptitle(title)
     # save the figure
     plt.tight_layout()
-    plt.savefig(f"results/values_{lr}.png")
+    plt.savefig(f"results/{num}_values_{lr}.png")
 
 
 def show_loss(losses: dict, lr, title="losses"):

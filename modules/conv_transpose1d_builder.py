@@ -9,5 +9,5 @@ class ConvTranspose1DBuilder(object):
         )
         if use_kaiming_normal:
             conv = nn.utils.weight_norm(conv)
-            nn.init.kaiming_normal_(conv.weight)
+            nn.init.kaiming_normal_(conv.weight, nonlinearity="relu")
         return conv
