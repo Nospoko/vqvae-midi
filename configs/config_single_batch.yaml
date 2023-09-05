@@ -39,3 +39,4 @@ model:
   verbose: False
 
 run_date: ${now:%Y_%m_%d_%H_%M}
+run_name: ${run_date}_single_batch

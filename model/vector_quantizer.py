@@ -37,8 +37,9 @@ class VectorQuantizer(nn.Module):
         encoding_indices: Tensor containing the discrete encoding indices, ie
         which element of the quantized space each input element was mapped to.
         """
+
         encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
-        encodings = torch.zeros(encoding_indices.shape[0], self._num_embeddings, dtype=torch.float).to(self._device)
+        encodings = torch.zeros(encoding_indices.shape[0], self._num_embeddings, dtype=torch.float).to(encoding_indices.device)
         encodings.scatter_(1, encoding_indices, 1)
 
         # Compute distances between encoding vectors
