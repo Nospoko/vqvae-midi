@@ -30,6 +30,7 @@ def overfit_single_batch(cfg: DictConfig):
         "reconstruction_loss": [],
         "vq_loss": [],
     }
+    best_loss = float("inf")
 
     for epoch in range(1, cfg.train.epochs + 1):
         model.train()
@@ -54,18 +55,18 @@ def overfit_single_batch(cfg: DictConfig):
             print(
                 f"Epoch [{epoch}/{cfg.train.epochs}]: Recon loss: {losses_dict['reconstruction_loss'][-1]}, VQ loss: {losses_dict['vq_loss'][-1]}"
             )
-            # save checkpoint
-            # FIXME: can load but reconstruction doesn't work due to VQ layer
-            checkpoint = {
-                "epoch": epoch,
-                "model_state_dict": model.state_dict(),
-                "optimizer_state_dict": optimizer.state_dict(),
-                "losses": losses_dict,
-                "x_combined": x_combined,
-                "single_batch": single_batch,
-            }
-            name = f"single_batch_overfitting_{cfg.train.lr}_{epoch}.pth"
-            torch.save(checkpoint, f"{cfg.logger.checkpoint_path}/{name}")
+            if loss < best_loss:
+                # FIXME: can load but reconstruction doesn't work due to VQ layer
+                checkpoint = {
+                    "epoch": epoch,
+                    "config": cfg,
+                    "model_state_dict": model.state_dict(),
+                    "optimizer_state_dict": optimizer.state_dict(),
+                    "losses": losses_dict,
+                    "single_batch": single_batch,
+                }
+                # save the checkpoint
+                torch.save(checkpoint, f"{cfg.logger.checkpoint_path}/{cfg.run_name}.pt")
 
     # visualize the original and reconstructed data
     lr = cfg.train.lr
