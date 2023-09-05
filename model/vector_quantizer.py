@@ -95,24 +95,25 @@ class VectorQuantizer(nn.Module):
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))  # Exponential entropy
 
         # Convert quantized from BHWC -> BCHW
-        return (
-            vq_loss,
-            quantized.permute(2, 0, 1).contiguous(),
-            perplexity,
-            encodings.view(batch_size, time, -1),
-            distances.view(batch_size, time, -1),
-            encoding_indices,
-            {
+
+        return {
+            "vq_loss": vq_loss,
+            "quantized": quantized.permute(2, 0, 1).contiguous(),
+            "perplexity": perplexity,
+            "encodings": encodings.view(batch_size, time, -1),
+            "distances": distances.view(batch_size, time, -1),
+            "encoding_indices": encoding_indices,
+            "losses": {
                 "e_latent_loss": e_latent_loss.item(),
                 "q_latent_loss": q_latent_loss.item(),
                 "commitment_loss": commitment_loss.item(),
                 "vq_loss": vq_loss.item(),
             },
-            encoding_distances,
-            embedding_distances,
-            frames_vs_embedding_distances,
-            concatenated_quantized,
-        )
+            "encoding_distances": encoding_distances,
+            "embedding_distances": embedding_distances,
+            "frames_vs_embedding_distances": frames_vs_embedding_distances,
+            "concatenated_quantized": concatenated_quantized,
+        }
 
     @property
     def embedding(self):
