@@ -44,7 +44,10 @@ class VectorQuantizer(nn.Module):
 
         # Compute distances between encoding vectors
         if not self.training and compute_distances_if_possible:
+            print("Shape of flat_input: ", flat_input.shape)
             _encoding_distances = [torch.dist(items[0], items[1], 2).to(self._device) for items in combinations(flat_input, r=2)]
+            print("Size of _encoding_distances: ", len(_encoding_distances))
+            print("Batch size: ", batch_size)
             encoding_distances = torch.tensor(_encoding_distances).to(self._device).view(batch_size, -1)
         else:
             encoding_distances = None

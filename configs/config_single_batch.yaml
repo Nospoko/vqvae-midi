@@ -23,9 +23,9 @@ model:
   input_features_dim: 60  # Aligned with the number of data points in each channel
   input_features_type: 'mfcc'
   # Encoder-Decoder details
-  num_hiddens: 1024
+  num_hiddens: 512
   num_residual_layers: 2
-  num_residual_hiddens: 1024
+  num_residual_hiddens: 512
   use_kaiming_normal: True
   # VQ details
   embedding_dim: 60

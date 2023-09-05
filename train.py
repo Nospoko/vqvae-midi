@@ -3,6 +3,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 from torch import nn, optim
+from torch.utils.data import DataLoader
 from omegaconf import OmegaConf, DictConfig
 
 import wandb
@@ -24,7 +25,7 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def test(model, test_loader, criterion, cfg, epoch):
+def test(model: VQVAE, test_loader: DataLoader, criterion, cfg: DictConfig, epoch: int):
     model.eval()
     total_test_loss = 0
     total_reconstruction_loss = 0
@@ -34,8 +35,7 @@ def test(model, test_loader, criterion, cfg, epoch):
         for batch in test_loader:
             x_combined = torch.stack([batch["start"], batch["duration"], batch["velocity"]], dim=1)
 
-            if cfg.system.cuda:
-                x_combined = x_combined.to("cuda")
+            x_combined = x_combined.to(cfg.system.device)
 
             reconstructed_x, vq_loss, losses, perplexity, _, _ = model(x_combined)
 
@@ -60,7 +60,7 @@ def test(model, test_loader, criterion, cfg, epoch):
         print(f"Epoch {epoch}, Average Test Loss: {avg_test_loss}")
 
 
-def train(model, train_loader, optimizer, criterion, cfg, epoch):
+def train(model: VQVAE, train_loader: DataLoader, optimizer, criterion, cfg: DictConfig, epoch: int):
     model.train()
     total_train_loss = 0
     total_recon_error = 0
@@ -90,12 +90,12 @@ def train(model, train_loader, optimizer, criterion, cfg, epoch):
         optimizer.step()
         n_train += 1
 
-        if batch_idx + 1 % cfg.train.log_interval == 0:
+        if (batch_idx + 1) % cfg.train.log_interval == 0:
             wandb.log(
                 {
-                    "train/Total Train Loss": total_train_loss / n_train,
-                    "train/Reconstruction Loss": total_recon_error / n_train,
-                    "train/VQ Loss": vq_loss.item(),
+                    "train/avg_loss": total_train_loss / n_train,
+                    "train/recon_loss": total_recon_error / n_train,
+                    "train/VQ_loss": vq_loss.item(),
                     "train/Perplexity": perplexity,
                 }
             )
@@ -104,11 +104,13 @@ def train(model, train_loader, optimizer, criterion, cfg, epoch):
 
     # Save checkpoint
     checkpoint = {
-        "model": model.state_dict(),
-        "optimizer": optimizer.state_dict(),
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
         "epoch": epoch,
+        "config": cfg,
     }
-    torch.save(checkpoint, f"checkpoints/checkpoint_{epoch}.pt")
+    # save the checkpoint
+    torch.save(checkpoint, f"checkpoints/{cfg.run_name}{epoch}.pt")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -127,12 +129,24 @@ def main(cfg: DictConfig):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)
 
-    train_loader, _, _ = create_loaders(cfg, seed=cfg.system.seed)
-
+    train_loader, _, test_loader = create_loaders(cfg, seed=cfg.system.seed)
     # Train the model
     for epoch in range(1, cfg.train.epochs + 1):
-        train(model, train_loader, optimizer, criterion, cfg, epoch)
-        test(model, train_loader, criterion, cfg, epoch)
+        train(
+            model=model,
+            train_loader=train_loader,
+            optimizer=optimizer,
+            criterion=criterion,
+            cfg=cfg,
+            epoch=epoch,
+        )
+        test(
+            model,
+            test_loader=test_loader,
+            criterion=criterion,
+            cfg=cfg,
+            epoch=epoch,
+        )
 
 
 if __name__ == "__main__":

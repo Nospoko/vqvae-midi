@@ -56,7 +56,6 @@ def overfit_single_batch(cfg: DictConfig):
                 f"Epoch [{epoch}/{cfg.train.epochs}]: Recon loss: {losses_dict['reconstruction_loss'][-1]}, VQ loss: {losses_dict['vq_loss'][-1]}"
             )
             if loss < best_loss:
-                # FIXME: can load but reconstruction doesn't work due to VQ layer
                 checkpoint = {
                     "epoch": epoch,
                     "config": cfg,
