@@ -35,7 +35,11 @@ class DeconvolutionalDecoder(nn.Module):
             self._jitter = Jitter(jitter_probability)
 
         self._conv_1 = Conv1DBuilder.build(
-            in_channels=in_channels, out_channels=num_hiddens, kernel_size=3, padding=1, use_kaiming_normal=use_kaiming_normal
+            in_channels=in_channels,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            padding=1,
+            use_kaiming_normal=use_kaiming_normal,
         )
 
         self._upsample = nn.Upsample(scale_factor=2)
@@ -49,15 +53,27 @@ class DeconvolutionalDecoder(nn.Module):
         )
 
         self._conv_trans_1 = ConvTranspose1DBuilder.build(
-            in_channels=num_hiddens, out_channels=num_hiddens, kernel_size=3, padding=1, use_kaiming_normal=use_kaiming_normal
+            in_channels=num_hiddens,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            padding=1,
+            use_kaiming_normal=use_kaiming_normal,
         )
 
         self._conv_trans_2 = ConvTranspose1DBuilder.build(
-            in_channels=num_hiddens, out_channels=num_hiddens, kernel_size=3, padding=0, use_kaiming_normal=use_kaiming_normal
+            in_channels=num_hiddens,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            padding=0,
+            use_kaiming_normal=use_kaiming_normal,
         )
 
         self._conv_trans_3 = ConvTranspose1DBuilder.build(
-            in_channels=num_hiddens, out_channels=out_channels, kernel_size=2, padding=0, use_kaiming_normal=use_kaiming_normal
+            in_channels=num_hiddens,
+            out_channels=out_channels,
+            kernel_size=2,
+            padding=0,
+            use_kaiming_normal=use_kaiming_normal,
         )
 
     def forward(self, inputs):
