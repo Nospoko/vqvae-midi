@@ -19,6 +19,7 @@ class VectorQuantizer(nn.Module):
 
     def forward(self, inputs, compute_distances_if_possible=True, record_codebook_stats=False):
         # Convert inputs from BCHW -> BHWC
+        print("Shape of inputs: ", inputs.shape)
         inputs = inputs.permute(1, 2, 0).contiguous()
         input_shape = inputs.shape
         _, time, batch_size = input_shape

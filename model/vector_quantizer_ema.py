@@ -59,7 +59,7 @@ class VectorQuantizerEMA(nn.Module):
         encoding_indices: Tensor containing the discrete encoding indices, ie
         which element of the quantized space each input element was mapped to.
         """
-        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1)
+        encoding_indices = torch.argmin(distances, dim=1).unsqueeze(1).to(self._device)
         encodings = torch.zeros(encoding_indices.shape[0], self._num_embeddings, dtype=torch.float).to(self._device)
         encodings.scatter_(1, encoding_indices, 1)
 
@@ -127,20 +127,20 @@ class VectorQuantizerEMA(nn.Module):
         """
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-10)))
 
-        # Convert quantized from BHWC -> BCHW
-        return (
-            vq_loss,
-            quantized.permute(2, 0, 1).contiguous(),
-            perplexity,
-            encodings.view(batch_size, time, -1),
-            distances.view(batch_size, time, -1),
-            encoding_indices,
-            {"vq_loss": vq_loss.item()},
-            encoding_distances,
-            embedding_distances,
-            frames_vs_embedding_distances,
-            concatenated_quantized,
-        )
+        # # Convert quantized from BHWC -> BCHW
+        return {
+            "vq_loss": vq_loss,
+            "quantized": quantized.permute(2, 0, 1).contiguous(),
+            "perplexity": perplexity,
+            "encodings": encodings.view(batch_size, time, -1),
+            "distances": distances.view(batch_size, time, -1),
+            "encoding_indices": encoding_indices,
+            "losses": {"vq_loss": vq_loss.item()},
+            "encoding_distances": encoding_distances,
+            "embedding_distances": embedding_distances,
+            "frames_vs_embedding_distances": frames_vs_embedding_distances,
+            "concatenated_quantized": concatenated_quantized,
+        }
 
     @property
     def embedding(self):
