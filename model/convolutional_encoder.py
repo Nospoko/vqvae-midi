@@ -39,7 +39,11 @@ class ConvolutionalEncoder(nn.Module):
         )
 
         self._conv_2 = Conv1DBuilder.build(
-            in_channels=num_hiddens, out_channels=num_hiddens, kernel_size=3, use_kaiming_normal=use_kaiming_normal, padding=1
+            in_channels=num_hiddens,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            use_kaiming_normal=use_kaiming_normal,
+            padding=1,
         )
 
         """
@@ -62,11 +66,19 @@ class ConvolutionalEncoder(nn.Module):
         """
 
         self._conv_4 = Conv1DBuilder.build(
-            in_channels=num_hiddens, out_channels=num_hiddens, kernel_size=3, use_kaiming_normal=use_kaiming_normal, padding=1
+            in_channels=num_hiddens,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            use_kaiming_normal=use_kaiming_normal,
+            padding=1,
         )
 
         self._conv_5 = Conv1DBuilder.build(
-            in_channels=num_hiddens, out_channels=num_hiddens, kernel_size=3, use_kaiming_normal=use_kaiming_normal, padding=1
+            in_channels=num_hiddens,
+            out_channels=num_hiddens,
+            kernel_size=3,
+            use_kaiming_normal=use_kaiming_normal,
+            padding=1,
         )
 
         """
@@ -94,11 +106,11 @@ class ConvolutionalEncoder(nn.Module):
         if self._verbose:
             ConsoleLogger.status("x_conv_1 output size: {}".format(x_conv_1.size()))
 
-        x = F.relu(self._batch_norm2(self._conv_2(x_conv_1))) + x_conv_1
+        x_conv_2 = F.relu(self._batch_norm2(self._conv_2(x_conv_1))) + x_conv_1
         if self._verbose:
-            ConsoleLogger.status("_conv_2 output size: {}".format(x.size()))
+            ConsoleLogger.status("_conv_2 output size: {}".format(x_conv_2.size()))
 
-        x_conv_3 = F.relu(self._batch_norm3(self._conv_3(x)))
+        x_conv_3 = F.relu(self._batch_norm3(self._conv_3(x_conv_2)))
         if self._verbose:
             ConsoleLogger.status("_conv_3 output size: {}".format(x_conv_3.size()))
 

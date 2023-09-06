@@ -82,10 +82,6 @@ class VQVAE(nn.Module):
 
         z = self._pre_vq_conv(z)
 
-        # vq_loss, quantized, perplexity, _, _, encoding_indices, losses, _, _, _, concatenated_quantized = self._vq(
-        #     z, record_codebook_stats=self._record_codebook_stats
-        # )
-
         vq_dict = self._vq(z, record_codebook_stats=self._record_codebook_stats)
 
         reconstructed_x = self._decoder(vq_dict["quantized"])
