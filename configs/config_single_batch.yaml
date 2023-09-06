@@ -25,7 +25,7 @@ model:
   # Encoder-Decoder details
   num_hiddens: 512
   num_residual_layers: 2
-  num_residual_hiddens: 512
+  num_residual_hiddens: 128
   use_kaiming_normal: True
   # VQ details
   embedding_dim: 60

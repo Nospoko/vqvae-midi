@@ -84,7 +84,7 @@ class VectorQuantizerEMA(nn.Module):
 
         # Loss
         if not self.training:
-            quantized = quantized.to("cpu")
+            quantized = quantized.to(inputs.device)
         e_latent_loss = torch.mean((quantized.detach() - inputs) ** 2)
         commitment_loss = self._commitment_cost * e_latent_loss
         vq_loss = commitment_loss

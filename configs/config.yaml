@@ -28,10 +28,10 @@ model:
   num_residual_hiddens: 512
   use_kaiming_normal: True
   # VQ details
-  embedding_dim: 60
-  num_embeddings: 512
+  embedding_dim: 60 # We might want to lower this value in the future
+  num_embeddings: 512 # K, needs empirical tuning
   commitment_cost: 0.25
-  decay: 0.0
+  decay: 0.99
   # Misc
   use_jitter: False
   jitter_probability: 0.12
