@@ -54,12 +54,12 @@ if __name__ == "__main__":
     _, validation_loader, _ = create_loaders(cfg, seed=cfg.system.seed)
     # take a batch from the validation set
     batch = next(iter(validation_loader))
-    generate_midi(
+    title, original_piece, reconstructed_piece = generate_midi(
         cfg,
         model,
         batch,
         "all_data17",
         track_idx=0,
-        mp3=False,
+        mp3=True,
         midi=True,
     )

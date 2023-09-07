@@ -42,6 +42,7 @@ def show_midi_random_pitch(start, duration, velocity, start_recon, duration_reco
     plt.savefig(f"results/{title}.png")
 
 
+# TODO: Have to re-write this function after switch to ff.MidiPiece
 def compare_values(start, duration, velocity, start_recon, duration_recon, velocity_recon, title, lr=None, num=0):
     """
     3 axes showing the parameters of the original and reconstructed data
