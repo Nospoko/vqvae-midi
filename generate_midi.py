@@ -1,67 +1,41 @@
-import os
-
 import torch
 import numpy as np
-import pretty_midi
-from fortepyan.audio import render as render_audio
 
-from model.VQVAE import VQVAE
-from visualizations import compare_values
 from utils.data_loader import create_loaders
+from utils.visualizations import compare_values
+from evals.checkpoint_tools import load_checkpoint
+from evals.midi_tools import to_midi, save_midi, render_midi_to_mp3
 
 
-def to_midi(pitch: np.ndarray, dstart: np.ndarray, duration: np.ndarray, velocity: np.ndarray, track_name: str = "piano"):
-    track = pretty_midi.PrettyMIDI()
-    piano = pretty_midi.Instrument(program=0, name=track_name)
+# This can go, leaving it for now in case we need it later
+def single_batch_compare(original: dict, generated: torch.Tensor):
+    for track_idx in range(original["start"].shape[0]):
+        original_pitch = original["pitch"][track_idx, :].detach().cpu().numpy()
+        original_dstart = original["start"][track_idx, :].detach().cpu().numpy()
+        original_duration = original["duration"][track_idx, :].detach().cpu().numpy()
+        original_velocity = original["velocity"][track_idx, :].detach().cpu().numpy()
 
-    previous_start = 0.0
+        generated_dstart = generated[track_idx, 0, :].detach().cpu().numpy()
+        generated_duration = generated[track_idx, 1, :].detach().cpu().numpy()
+        generated_velocity = generated[track_idx, 2, :].detach().cpu().numpy()
 
-    for p, ds, d, v in zip(pitch, dstart, duration, velocity):
-        start = previous_start + ds
-        end = start + d
-        previous_start = start
+        # denormalize velocity
+        original_velocity = original_velocity * 127.0
+        generated_velocity = generated_velocity * 127.0
+        generated_velocity = np.round(generated_velocity)
 
-        note = pretty_midi.Note(
-            velocity=int(v),
-            pitch=int(p),
-            start=start,
-            end=end,
+        original_mp3_path = render_midi_to_mp3(
+            f"{track_idx}_original.mp3", original_pitch, original_dstart, original_duration, original_velocity
+        )
+        generated_mp3_path = render_midi_to_mp3(
+            f"{track_idx}_reconstructed.mp3", original_pitch, generated_dstart, generated_duration, generated_velocity
         )
 
-        piano.notes.append(note)
-
-    track.instruments.append(piano)
-
-    return track
+        print(f"Original: {original_mp3_path}")
+        print(f"Generated: {generated_mp3_path}")
 
 
-def load_checkpoint(ckpt_path: str):
-    checkpoint = torch.load(ckpt_path)
-    cfg = checkpoint["config"]
-
-    model = VQVAE(cfg.model, cfg.system.device)
-    model.load_state_dict(checkpoint["model_state_dict"])
-
-    return checkpoint, cfg, model
-
-
-def render_midi_to_mp3(
-    filename: str, pitch: np.ndarray, dstart: np.ndarray, duration: np.ndarray, velocity: np.ndarray, original: bool
-) -> str:
-    midi_filename = os.path.basename(filename)
-
-    if original:
-        mp3_path = os.path.join("tmp", "original", midi_filename)
-    else:
-        mp3_path = os.path.join("tmp", "reconstructed", midi_filename)
-
-    if not os.path.exists(mp3_path):
-        track = to_midi(pitch, dstart, duration, velocity)
-        render_audio.midi_to_mp3(track, mp3_path)
-
-    return mp3_path
-
-
+# Might want to rename this to something else
 @torch.no_grad()
 def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0, midi: bool = True, mp3: bool = True):
     model.eval()
@@ -85,25 +59,24 @@ def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0, midi: bo
     generated_velocity = np.round(generated_velocity)
 
     if midi:
-        for track_idx in range(64):
-            save_midi(
-                track=to_midi(
-                    pitch=original_pitch,
-                    dstart=original_dstart,
-                    duration=original_duration,
-                    velocity=original_velocity,
-                ),
-                filename=f"{track_idx}_original.mid",
-            )
-            save_midi(
-                track=to_midi(
-                    pitch=original_pitch,
-                    dstart=generated_dstart,
-                    duration=generated_duration,
-                    velocity=generated_velocity,
-                ),
-                filename=f"{track_idx}_reconstructed.mid",
-            )
+        save_midi(
+            track=to_midi(
+                pitch=original_pitch,
+                dstart=original_dstart,
+                duration=original_duration,
+                velocity=original_velocity,
+            ),
+            filename=f"{track_idx}_original.mid",
+        )
+        save_midi(
+            track=to_midi(
+                pitch=original_pitch,
+                dstart=generated_dstart,
+                duration=generated_duration,
+                velocity=generated_velocity,
+            ),
+            filename=f"{track_idx}_reconstructed.mid",
+        )
 
     if mp3:
         render_midi_to_mp3(
@@ -135,18 +108,24 @@ def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0, midi: bo
         )
 
 
-def save_midi(track: pretty_midi.PrettyMIDI, filename: str):
-    # add tmp/midi directory to filename
-    filename = os.path.join("tmp", "midi", filename)
-    track.write(filename)
-
-
 if __name__ == "__main__":
     ckpt_path = "checkpoints/2023_09_06_21_32_all_data165.pt"
     checkpoint, cfg, model = load_checkpoint(ckpt_path)
 
-    _, validation_loader, _ = create_loaders(cfg, seed=cfg.system.seed)
+    # If we want to evaluate a single batch:
+    single_batch_eval = False
+    if single_batch_eval:
+        single_batch = checkpoint["single_batch"]
+        x_combined = torch.stack([single_batch["start"], single_batch["duration"], single_batch["velocity"]], dim=1)
 
+        reconstructed_x, vq_loss, losses, perplexity, _, _ = model(x_combined)
+
+        single_batch_compare(single_batch, reconstructed_x)
+        exit()
+
+    # Model evaluation
+    # get the validation loader
+    _, validation_loader, _ = create_loaders(cfg, seed=cfg.system.seed)
     # take a batch from the validation set
     batch = next(iter(validation_loader))
     generate_midi(

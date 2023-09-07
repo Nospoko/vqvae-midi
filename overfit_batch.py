@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 from model.VQVAE import VQVAE
 from train import set_seed, count_parameters
 from utils.data_loader import create_loaders
-from visualizations import show_loss, compare_values
+from utils.visualizations import show_loss, compare_values
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config_single_batch")
