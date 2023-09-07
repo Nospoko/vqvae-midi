@@ -129,6 +129,7 @@ def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0, midi: bo
         )
 
     return {
+        "title": batch["name"][track_idx],
         "original": {
             "pitch": original_pitch,
             "dstart": original_dstart,
