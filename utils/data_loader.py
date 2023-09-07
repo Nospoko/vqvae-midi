@@ -13,7 +13,7 @@ def create_loaders(cfg, seed=None):
     validation = data["validation"]
     test = data["test"]
 
-    columns = ["start", "duration", "velocity", "pitch"]
+    columns = ["name", "start", "duration", "velocity", "pitch"]
 
     train.set_format(type="torch", columns=columns)
     validation.set_format(type="torch", columns=columns)
