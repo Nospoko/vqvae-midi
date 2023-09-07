@@ -45,9 +45,15 @@ def load_checkpoint(ckpt_path: str):
     return checkpoint, cfg, model
 
 
-def render_midi_to_mp3(filename: str, pitch: np.ndarray, dstart: np.ndarray, duration: np.ndarray, velocity: np.ndarray) -> str:
+def render_midi_to_mp3(
+    filename: str, pitch: np.ndarray, dstart: np.ndarray, duration: np.ndarray, velocity: np.ndarray, original: bool
+) -> str:
     midi_filename = os.path.basename(filename)
-    mp3_path = os.path.join("tmp", midi_filename)
+
+    if original:
+        mp3_path = os.path.join("tmp", "original", midi_filename)
+    else:
+        mp3_path = os.path.join("tmp", "reconstructed", midi_filename)
 
     if not os.path.exists(mp3_path):
         track = to_midi(pitch, dstart, duration, velocity)
@@ -57,14 +63,13 @@ def render_midi_to_mp3(filename: str, pitch: np.ndarray, dstart: np.ndarray, dur
 
 
 @torch.no_grad()
-def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0):
+def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0, midi: bool = True, mp3: bool = True):
     model.eval()
 
     x_combined = torch.stack([batch["start"], batch["duration"], batch["velocity"]], dim=1)
     # x_combined = x_combined.to(cfg.system.device)
 
     reconstructed_x, vq_loss, losses, perplexity, _, _ = model(x_combined)
-
     original_pitch = batch["pitch"][track_idx, :].detach().cpu().numpy()
     original_dstart = batch["start"][track_idx, :].detach().cpu().numpy()
     original_duration = batch["duration"][track_idx, :].detach().cpu().numpy()
@@ -79,47 +84,77 @@ def generate_midi(cfg, model, batch, filename: str, track_idx: int = 0):
     generated_velocity = generated_velocity * 127.0
     generated_velocity = np.round(generated_velocity)
 
-    render_midi_to_mp3(
-        filename=f"{filename}_{track_idx}_original.mp3",
-        pitch=original_pitch,
-        dstart=original_dstart,
-        duration=original_duration,
-        velocity=original_velocity,
-    )
-    render_midi_to_mp3(
-        filename=f"{filename}_{track_idx}_reconstructed.mp3",
-        pitch=original_pitch,
-        dstart=generated_dstart,
-        duration=generated_duration,
-        velocity=generated_velocity,
-    )
-    compare_values(
-        start=original_dstart,
-        duration=original_duration,
-        velocity=original_velocity,
-        start_recon=generated_dstart,
-        duration_recon=generated_duration,
-        velocity_recon=generated_velocity,
-        title=f"{filename}_{track_idx}",
-        lr=cfg.train.lr,
-        num=track_idx,
-    )
+    if midi:
+        for track_idx in range(64):
+            save_midi(
+                track=to_midi(
+                    pitch=original_pitch,
+                    dstart=original_dstart,
+                    duration=original_duration,
+                    velocity=original_velocity,
+                ),
+                filename=f"{track_idx}_original.mid",
+            )
+            save_midi(
+                track=to_midi(
+                    pitch=original_pitch,
+                    dstart=generated_dstart,
+                    duration=generated_duration,
+                    velocity=generated_velocity,
+                ),
+                filename=f"{track_idx}_reconstructed.mid",
+            )
+
+    if mp3:
+        render_midi_to_mp3(
+            filename=f"original/{track_idx}_original.mp3",
+            pitch=original_pitch,
+            dstart=original_dstart,
+            duration=original_duration,
+            velocity=original_velocity,
+            original=True,
+        )
+        render_midi_to_mp3(
+            filename=f"reconstructed/{track_idx}_reconstructed.mp3",
+            pitch=original_pitch,
+            dstart=generated_dstart,
+            duration=generated_duration,
+            velocity=generated_velocity,
+            original=False,
+        )
+        compare_values(
+            start=original_dstart,
+            duration=original_duration,
+            velocity=original_velocity,
+            start_recon=generated_dstart,
+            duration_recon=generated_duration,
+            velocity_recon=generated_velocity,
+            title=f"{filename}_{track_idx}",
+            lr=cfg.train.lr,
+            num=track_idx,
+        )
+
+
+def save_midi(track: pretty_midi.PrettyMIDI, filename: str):
+    # add tmp/midi directory to filename
+    filename = os.path.join("tmp", "midi", filename)
+    track.write(filename)
 
 
 if __name__ == "__main__":
-    ckpt_path = "checkpoints/2023_09_06_11_24_all_data17.pt"
+    ckpt_path = "checkpoints/2023_09_06_21_32_all_data165.pt"
     checkpoint, cfg, model = load_checkpoint(ckpt_path)
 
     _, validation_loader, _ = create_loaders(cfg, seed=cfg.system.seed)
 
     # take a batch from the validation set
     batch = next(iter(validation_loader))
-    print(batch["pitch"].shape)
-
     generate_midi(
         cfg,
         model,
         batch,
         "all_data17",
         track_idx=0,
+        mp3=False,
+        midi=True,
     )

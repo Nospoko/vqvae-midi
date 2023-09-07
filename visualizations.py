@@ -48,8 +48,6 @@ def compare_values(start, duration, velocity, start_recon, duration_recon, veloc
     """
     # velocity = (velocity + 1) * 127.0 / 2.0
     # velocity_recon = (velocity_recon + 1) * 127.0 / 2.0
-    velocity = velocity * 127.0
-    velocity_recon = velocity_recon * 127.0
 
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 9))
 
@@ -71,7 +69,7 @@ def compare_values(start, duration, velocity, start_recon, duration_recon, veloc
     plt.suptitle(title)
     # save the figure
     plt.tight_layout()
-    plt.savefig(f"results/{num}_values_{lr}.png")
+    plt.savefig(f"tmp/graphs/{num}_values_{lr}.png")
 
 
 def show_loss(losses: dict, lr, title="losses"):
