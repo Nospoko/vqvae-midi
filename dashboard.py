@@ -5,7 +5,7 @@ from evals.checkpoint_tools import load_checkpoint
 from evals.midi_tools import generate_midi, plot_piano_roll, render_midi_to_mp3
 
 
-def display_audio(title, fortepyan_midi, generated_fortepyan_midi, split, selected_batch, selected_track):
+def display_audio(title, fortepyan_midi, generated_fortepyan_midi, split, selected_batch, selected_track, losses):
     st.title(title)
 
     # layout two columns for Original and Reconstructed
@@ -33,6 +33,10 @@ def display_audio(title, fortepyan_midi, generated_fortepyan_midi, split, select
         st.pyplot(fig2)
         st.audio(generated_mp3_path, format="audio/mp3", start_time=0)
 
+    # display info abbout the loss
+    st.write("Reconstruction Loss: ", losses["recon_loss"])
+    st.write("VQ Loss: ", losses["vq_loss"])
+
 
 def main():
     ckpt_path = "checkpoints/2023_09_06_21_32_all_data165.pt"
@@ -49,7 +53,7 @@ def main():
 
     for i, batch in enumerate(selected_loader):
         if i == selected_batch:
-            title, fortepyan_midi, generated_fortepyan_midi = generate_midi(
+            title, fortepyan_midi, generated_fortepyan_midi, losses = generate_midi(
                 cfg,
                 model,
                 batch,
@@ -59,7 +63,15 @@ def main():
                 midi=False,
             )
 
-            display_audio(title, fortepyan_midi, generated_fortepyan_midi, split, selected_batch, selected_track)
+            display_audio(
+                title=title,
+                fortepyan_midi=fortepyan_midi,
+                generated_fortepyan_midi=generated_fortepyan_midi,
+                split=split,
+                selected_batch=selected_batch,
+                selected_track=selected_track,
+                losses=losses,
+            )
             break
 
 

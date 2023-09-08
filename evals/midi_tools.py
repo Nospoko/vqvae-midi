@@ -71,7 +71,7 @@ def generate_midi(
     track_idx: int = 0,
     midi: bool = True,
     mp3: bool = True,
-) -> tuple[str, ff.MidiPiece, ff.MidiPiece]:
+) -> tuple[str, ff.MidiPiece, ff.MidiPiece, dict]:
     model.eval()
 
     x_combined = torch.stack([batch["start"], batch["duration"], batch["velocity"]], dim=1)
@@ -139,5 +139,7 @@ def generate_midi(
             lr=cfg.train.lr,
             num=track_idx,
         )
+    recon_loss = torch.nn.functional.mse_loss(reconstructed_x, x_combined)
+    losses["recon_loss"] = recon_loss.item()
 
-    return batch["name"][track_idx], original_piece, reconstructed_piece
+    return batch["name"][track_idx], original_piece, reconstructed_piece, losses
