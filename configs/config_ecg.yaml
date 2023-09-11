@@ -1,8 +1,8 @@
 train:
   batch_size: 64
-  epochs: 100
+  epochs: 3
   log_interval: 10
-  lr: 1e-6
+  lr: 2e-4
 
 logger:
   results_path: "results/"
@@ -23,13 +23,13 @@ model:
   input_features_dim: 1000  # Aligned with the number of data points in each channel
   input_features_type: 'mfcc'
   # Encoder-Decoder details
-  num_hiddens: 512
+  num_hiddens: 64
   num_residual_layers: 2
-  num_residual_hiddens: 512
+  num_residual_hiddens: 64
   use_kaiming_normal: True
   # VQ details
-  embedding_dim: 64 # We might want to lower this value in the future, size of embedding vectors
-  num_embeddings: 512 # K, needs empirical tuning
+  embedding_dim: 100 # We might want to lower this value in the future, size of embedding vectors
+  num_embeddings: 32 # K, needs empirical tuning
   commitment_cost: 0.25
   decay: 0.99
   # Misc
@@ -39,4 +39,4 @@ model:
   verbose: False
 
 run_date: ${now:%Y_%m_%d_%H_%M}
-run_name: ${run_date}_all_data
+run_name: ${model.num_embeddings}embeddings_${model.embedding_dim}dim_${model.num_hiddens}hidden

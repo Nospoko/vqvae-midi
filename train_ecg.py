@@ -106,12 +106,12 @@ def train(model: VQVAE, train_loader: DataLoader, optimizer, criterion, cfg: Dic
         "config": cfg,
     }
     # save the checkpoint
-    torch.save(checkpoint, f"checkpoints/{cfg.run_name}{epoch}.pt")
+    torch.save(checkpoint, f"checkpoints/{cfg.run_name}.pt")
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config_ecg")
 def main(cfg: DictConfig):
-    name = f"ECG_VQ-VAE_{cfg.run_date}"
+    name = cfg.run_name
     wandb.init(
         project="ECG VQ-VAE",
         name=name,
