@@ -1,3 +1,5 @@
+import os
+
 import hydra
 import torch
 import numpy as np
@@ -25,7 +27,16 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def test(model: VQVAE, test_loader: DataLoader, criterion, cfg: DictConfig, epoch: int):
+def create_folders(cfg: DictConfig):
+    logger_dict = cfg.logger
+
+    for _, value in logger_dict.items():
+        if value[-1] == "/":
+            value = value[:-1]
+            os.makedirs(value, exist_ok=True)
+
+
+def test_step(model: VQVAE, test_loader: DataLoader, criterion, cfg: DictConfig, epoch: int):
     model.eval()
     total_test_loss = 0
     total_reconstruction_loss = 0
@@ -60,7 +71,7 @@ def test(model: VQVAE, test_loader: DataLoader, criterion, cfg: DictConfig, epoc
         print(f"Epoch {epoch}, Average Test Loss: {avg_test_loss}")
 
 
-def train(model: VQVAE, train_loader: DataLoader, optimizer, criterion, cfg: DictConfig, epoch: int):
+def train_step(model: VQVAE, train_loader: DataLoader, optimizer, criterion, cfg: DictConfig, epoch: int):
     model.train()
     total_train_loss = 0
     total_recon_error = 0
@@ -125,6 +136,7 @@ def main(cfg: DictConfig):
     model = VQVAE(cfg.model, cfg.system.device)
     model.to(cfg.system.device)
     # count_parameters(model)
+    create_folders(cfg)
 
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)
@@ -132,7 +144,7 @@ def main(cfg: DictConfig):
     train_loader, _, test_loader = create_loaders(cfg, seed=cfg.system.seed)
     # Train the model
     for epoch in range(1, cfg.train.epochs + 1):
-        train(
+        train_step(
             model=model,
             train_loader=train_loader,
             optimizer=optimizer,
@@ -140,7 +152,7 @@ def main(cfg: DictConfig):
             cfg=cfg,
             epoch=epoch,
         )
-        test(
+        test_step(
             model,
             test_loader=test_loader,
             criterion=criterion,

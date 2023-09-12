@@ -60,6 +60,6 @@ if __name__ == "__main__":
         batch,
         "all_data17",
         track_idx=0,
-        mp3=True,
+        mp3=False,
         midi=True,
     )
