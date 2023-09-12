@@ -23,13 +23,13 @@ model:
   input_features_dim: 1000  # Aligned with the number of data points in each channel
   input_features_type: 'mfcc'
   # Encoder-Decoder details
-  num_hiddens: 64
+  num_hiddens: 16
   num_residual_layers: 2
-  num_residual_hiddens: 64
+  num_residual_hiddens: 16
   use_kaiming_normal: True
   # VQ details
   embedding_dim: 100 # We might want to lower this value in the future, size of embedding vectors
-  num_embeddings: 32 # K, needs empirical tuning
+  num_embeddings: 64 # K, needs empirical tuning
   commitment_cost: 0.25
   decay: 0.99
   # Misc

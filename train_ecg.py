@@ -120,7 +120,7 @@ def main(cfg: DictConfig):
 
     model = VQVAE(cfg.model, cfg.system.device)
     model.to(cfg.system.device)
-    # count_parameters(model)
+    count_parameters(model)
 
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=cfg.train.lr)

@@ -6,7 +6,7 @@ from evals.checkpoint_tools import load_checkpoint
 from utils.visualizations import draw_ecg_reconstructions
 
 if __name__ == "__main__":
-    ckpt_path = "checkpoints/64embeddings_100dim_128hidden.pt"
+    ckpt_path = "checkpoints/16embeddings_100dim_16hidden.pt"
     checkpoint, cfg, model = load_checkpoint(ckpt_path)
 
     _, validation_loader, _ = create_ecg_loaders(cfg, seed=cfg.system.seed)
