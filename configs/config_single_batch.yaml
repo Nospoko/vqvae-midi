@@ -1,0 +1,41 @@
+train:
+  batch_size: 64
+  epochs: 2000
+  log_interval: 40
+  lr: 1e-4
+
+logger:
+  results_path: "results/"
+  checkpoint_path: "checkpoints/"
+
+system:
+  device: "cuda:0"
+  seed: 42
+
+model:
+  # Structure/Architecture
+  output_features_filters: 3
+  augment_output_features: False
+  input_features_filters: 3  # Aligned with the number of channels
+  augment_input_features: False
+  output_features_dim: 60 # Features size post decoding
+  input_features_dim: 60  # Aligned with the number of data points in each channel
+  input_features_type: 'mfcc'
+  # Encoder-Decoder details
+  num_hiddens: 512
+  num_residual_layers: 2
+  num_residual_hiddens: 128
+  use_kaiming_normal: True
+  # VQ details
+  embedding_dim: 60
+  num_embeddings: 8
+  commitment_cost: 0.25
+  decay: 0.99
+  # Misc
+  use_jitter: False
+  jitter_probability: 0.12
+  record_codebook_stats: False
+  verbose: False
+
+run_date: ${now:%Y_%m_%d_%H_%M}
+run_name: ${run_date}_single_batch
