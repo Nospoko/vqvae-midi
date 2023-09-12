@@ -1,3 +1,2 @@
 target_folder: "tmp/midi_batch"
 num_midi_files: 2
-checkpoint_path: "checkpoints/2023_09_06_21_32_all_data165.pt"

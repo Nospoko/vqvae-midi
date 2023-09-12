@@ -12,8 +12,7 @@ from evals.midi_tools import save_midi, to_fortepyan_midi
 
 @hydra.main(config_path="../configs", config_name="evaluation", version_base="1.3.2")
 def process_folder(cfg: DictConfig) -> None:
-    print(f"Trying to load checkpoint from {os.path.abspath(cfg.checkpoint_path)}")
-    checkpoint, model_config, model = load_checkpoint(cfg.checkpoint_path)
+    checkpoint, model_config, model = load_checkpoint()
 
     _, validation_loader, _ = create_loaders(model_config)
 
