@@ -9,7 +9,7 @@ from utils.data_loader import create_loaders
 from utils.visualizations import show_loss, compare_values
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config_single_batch")
+@hydra.main(version_base=None, config_path="../configs", config_name="config_single_batch")
 def overfit_single_batch(cfg: DictConfig):
     # Initialize model, loss, optimizer
     model = VQVAE(cfg.model, cfg.system.device)

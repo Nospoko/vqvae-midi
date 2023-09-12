@@ -8,3 +8,4 @@ tests/
 ecgdata/
 tmp/
 test.py
+multirun/

@@ -54,9 +54,12 @@ def render_midi_to_mp3(piece: ff.MidiPiece, filename: str, original: bool = True
     return mp3_path
 
 
-def save_midi(track: ff.MidiPiece, filename: str):
+def save_midi(track: ff.MidiPiece, filename: str, folder: str = None):
     # add tmp/midi directory to filename
-    filename = os.path.join("tmp", "midi", filename)
+    if folder is None:
+        filename = os.path.join("tmp", "midi", filename)
+    else:
+        filename = folder + "/" + filename
     track = track.to_midi()
     track.write(filename)
 
