@@ -43,8 +43,10 @@ def render_midi_to_mp3(piece: ff.MidiPiece, filename: str, original: bool = True
     midi_filename = os.path.basename(filename)
 
     if original:
+        os.makedirs(os.path.join("tmp", "original"), exist_ok=True)
         mp3_path = os.path.join("tmp", "original", midi_filename)
     else:
+        os.makedirs(os.path.join("tmp", "reconstructed"), exist_ok=True)
         mp3_path = os.path.join("tmp", "reconstructed", midi_filename)
 
     if not os.path.exists(mp3_path):
@@ -54,9 +56,14 @@ def render_midi_to_mp3(piece: ff.MidiPiece, filename: str, original: bool = True
     return mp3_path
 
 
-def save_midi(track: ff.MidiPiece, filename: str):
+def save_midi(track: ff.MidiPiece, filename: str, folder: str = None):
     # add tmp/midi directory to filename
-    filename = os.path.join("tmp", "midi", filename)
+    if folder is None:
+        # create midi folder if it doesn't exist
+        os.makedirs(os.path.join("tmp", "midi"), exist_ok=True)
+        filename = os.path.join("tmp", "midi", filename)
+    else:
+        filename = folder + "/" + filename
     track = track.to_midi()
     track.write(filename)
 
